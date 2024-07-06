@@ -19,16 +19,6 @@ namespace RenderVulkan
 
 		public:
 
-			String GetName() const
-			{
-				return name;
-			}
-
-			Pair<Vector<Vertex>, Vector<uint>> GetData() const
-			{
-				return { vertices, indices };
-			}
-
 			void Generate()
 			{
 				VkDevice device = Settings::GetInstance()->GetPointer<VkDevice>("logicalDevice");

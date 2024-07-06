@@ -133,7 +133,6 @@ namespace RenderVulkan
 				colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
 				VkPipelineColorBlendStateCreateInfo colorBlending{};
-
 				colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 				colorBlending.logicOpEnable = VK_FALSE;
 				colorBlending.logicOp = VK_LOGIC_OP_COPY;
@@ -145,7 +144,6 @@ namespace RenderVulkan
 				colorBlending.blendConstants[3] = 0.0f;
 
 				VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-
 				pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 				pipelineLayoutInfo.setLayoutCount = 0;
 				pipelineLayoutInfo.pSetLayouts = nullptr;
@@ -153,11 +151,9 @@ namespace RenderVulkan
 				pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
 				VkResult result = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
-
 				Logger_ThrowIfFailed(result, "Failed to create pipeline layout", false);
 
 				VkGraphicsPipelineCreateInfo pipelineInfo{};
-
 				pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 				pipelineInfo.stageCount = 2;
 				pipelineInfo.pStages = shaderStages;
@@ -176,7 +172,6 @@ namespace RenderVulkan
 				pipelineInfo.basePipelineIndex = -1;
 
 				result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
-
 				Logger_ThrowIfFailed(result, "Failed to create graphics pipeline", false);
             }
 
