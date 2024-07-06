@@ -40,6 +40,9 @@
 #include <type_traits>
 #include <limits>
 #include <wrl.h> 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>
 
 #ifdef DLL_MODE
@@ -89,6 +92,10 @@ namespace RenderVulkan
 		typedef glm::mat<2, 2, float, glm::packed_highp> Matrix2x2f;
 		typedef glm::mat<3, 3, float, glm::packed_highp> Matrix3x3f;
 		typedef glm::mat<4, 4, float, glm::packed_highp> Matrix4x4f;
+
+		typedef glm::qua<int, glm::packed_highp> Quaternioni;
+		typedef glm::qua<float, glm::packed_highp> Quaternionf;	
+		typedef glm::qua<double, glm::packed_highp> Quaterniond;
 
 		typedef std::any Any;
 		typedef std::exception RuntimeError;

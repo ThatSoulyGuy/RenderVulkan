@@ -166,6 +166,7 @@
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Core\Settings.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Core\Window.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Engine.hpp" />
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\DescriptorManager.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\Mesh.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\QueueFamilyIndices.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\Renderer.hpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\ShaderManager.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\SwapChainSupportDetails.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\Vertex.hpp" />
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\Math\Transform.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Util\DataHelper.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Util\DateTime.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Util\FileHelper.hpp" />

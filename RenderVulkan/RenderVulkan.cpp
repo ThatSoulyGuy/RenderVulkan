@@ -1,3 +1,5 @@
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "RenderVulkan/Core/Settings.hpp"
 #include "RenderVulkan/Core/Window.hpp"
 #include "RenderVulkan/Engine.hpp"

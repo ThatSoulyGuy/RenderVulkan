@@ -2,18 +2,25 @@
 
 #include "RenderVulkan/Core/Logger.hpp"
 #include "RenderVulkan/Core/Settings.hpp"
+#include "RenderVulkan/Math/Transform.hpp"
 #include "RenderVulkan/Render/Shader.hpp"
 #include "RenderVulkan/Render/Vertex.hpp"
 #include "RenderVulkan/Util/Typedefs.hpp"
 #include "RenderVulkan/Util/VulkanHelper.hpp"
 
 using namespace RenderVulkan::Core;
+using namespace RenderVulkan::Math;
 using namespace RenderVulkan::Util;
 
 namespace RenderVulkan
 {
 	namespace Render
 	{
+		struct DefaultMatrixBuffer
+		{
+			Matrix4x4f worldMatrix;
+		};
+
 		class Mesh
 		{
 
@@ -23,71 +30,51 @@ namespace RenderVulkan
 			{
 				VkDevice device = Settings::GetInstance()->GetPointer<VkDevice>("logicalDevice");
 
-				VkBufferCreateInfo bufferInformation{};
+				VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
+				VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
 
-				bufferInformation.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferInformation.size = sizeof(vertices[0]) * vertices.size();
-				bufferInformation.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-				bufferInformation.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+				VkBuffer stagingBuffer;
+				VkDeviceMemory stagingBufferMemory;
 
-				VkResult result = vkCreateBuffer(device, &bufferInformation, nullptr, &vertexBuffer);
-				
-				Logger_ThrowIfFailed(result, "Failed to create vertex buffer!", false);
-				
-				VkMemoryRequirements memoryRequirements;
-				vkGetBufferMemoryRequirements(device, vertexBuffer, &memoryRequirements);
-
-				VkMemoryAllocateInfo allocationInformation{};
-
-				allocationInformation.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-				allocationInformation.allocationSize = memoryRequirements.size;
-				allocationInformation.memoryTypeIndex = VulkanHelper::FindMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-				result = vkAllocateMemory(device, &allocationInformation, nullptr, &vertexBufferMemory);
-				
-				Logger_ThrowIfFailed(result, "Failed to allocate vertex buffer memory!", false);
-			
-
-				vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
-
+				CreateBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 				void* data;
+				vkMapMemory(device, stagingBufferMemory, 0, vertexBufferSize, 0, &data);
+				memcpy(data, vertices.data(), (size_t)vertexBufferSize);
+				vkUnmapMemory(device, stagingBufferMemory);
 
-				vkMapMemory(device, vertexBufferMemory, 0, bufferInformation.size, 0, &data);
+				CreateBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+				CopyBuffer(stagingBuffer, vertexBuffer, vertexBufferSize);
 
-				memcpy(data, vertices.data(), (size_t)bufferInformation.size);
+				vkDestroyBuffer(device, stagingBuffer, nullptr);
+				vkFreeMemory(device, stagingBufferMemory, nullptr);
 
-				vkUnmapMemory(device, vertexBufferMemory);
+				CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+				vkMapMemory(device, stagingBufferMemory, 0, indexBufferSize, 0, &data);
+				memcpy(data, indices.data(), (size_t)indexBufferSize);
+				vkUnmapMemory(device, stagingBufferMemory);
 
+				CreateBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+				CopyBuffer(stagingBuffer, indexBuffer, indexBufferSize);
 
-				bufferInformation.size = sizeof(indices[0]) * indices.size();
-				bufferInformation.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+				vkDestroyBuffer(device, stagingBuffer, nullptr);
+				vkFreeMemory(device, stagingBufferMemory, nullptr);
 
-				result = vkCreateBuffer(device, &bufferInformation, nullptr, &indexBuffer);
-				
-				Logger_ThrowIfFailed(result, "Failed to create index buffer!", false);
-				
-				vkGetBufferMemoryRequirements(device, indexBuffer, &memoryRequirements);
+				shader->CreateConstantBuffer<DefaultMatrixBuffer>();
+			}
 
+			String GetName() const
+			{
+				return name;
+			}
 
-				allocationInformation.allocationSize = memoryRequirements.size;
-				allocationInformation.memoryTypeIndex = VulkanHelper::FindMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-				result = vkAllocateMemory(device, &allocationInformation, nullptr, &indexBufferMemory);
-				
-				Logger_ThrowIfFailed(result, "Failed to allocate index buffer memory!", false);
-
-				vkBindBufferMemory(device, indexBuffer, indexBufferMemory, 0);
-
-				vkMapMemory(device, indexBufferMemory, 0, bufferInformation.size, 0, &data);
-
-				memcpy(data, indices.data(), (size_t)bufferInformation.size);
-
-				vkUnmapMemory(device, indexBufferMemory);
+			Pair<Vector<Vertex>, Vector<uint>> GetData() const
+			{
+				return { vertices, indices };
 			}
 
 			void Render(VkCommandBuffer commandBuffer)
 			{
-				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->GetPipeline());
+				shader->Bind(commandBuffer);
 
 				VkExtent2D swapChainExtent = Settings::GetInstance()->Get<VkExtent2D>("swapChainExtent");
 
@@ -115,6 +102,14 @@ namespace RenderVulkan
 				vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
 				vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+				shader->UpdateConstantBuffer(DefaultMatrixBuffer
+				{ 
+					glm::transpose(transform->GetWorldMatrix()) 
+				});
+
+				const auto& descriptorSets = shader->GetDescriptorManager()->GetDescriptorSets();
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->GetPipelineLayout(), 0, static_cast<uint>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
 
 				vkCmdDrawIndexed(commandBuffer, static_cast<uint>(indices.size()), 1, 0, 0, 0);
 			}
@@ -158,20 +153,112 @@ namespace RenderVulkan
 
 				mesh->name = name;
 				mesh->shader = shader;
+				mesh->transform = Transform::Create();
 				mesh->vertices = vertices;
 				mesh->indices = indices;
 
 				return mesh;
 			}
 
+			Shared<Transform> transform;
+
 		private:
 
 			Mesh() = default;
 
+			void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+			{
+				VkDevice device = Settings::GetInstance()->GetPointer<VkDevice>("logicalDevice");
+
+				VkBufferCreateInfo bufferInfo{};
+
+				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+				bufferInfo.size = size;
+				bufferInfo.usage = usage;
+				bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+				VkResult result = vkCreateBuffer(device, &bufferInfo, nullptr, &buffer);
+				Logger_ThrowIfFailed(result, "Failed to create buffer!", false);
+
+				VkMemoryRequirements memRequirements;
+
+				vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+				VkMemoryAllocateInfo allocInfo{};
+
+				allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+				allocInfo.allocationSize = memRequirements.size;
+				allocInfo.memoryTypeIndex = VulkanHelper::FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+				result = vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory);
+				Logger_ThrowIfFailed(result, "Failed to allocate buffer memory!", false);
+
+				vkBindBufferMemory(device, buffer, bufferMemory, 0);
+			}
+
+			void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+			{
+				VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+
+				VkBufferCopy copyRegion{};
+
+				copyRegion.srcOffset = 0;
+				copyRegion.dstOffset = 0;
+				copyRegion.size = size;
+
+				vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+				EndSingleTimeCommands(commandBuffer);
+			}
+
+			VkCommandBuffer BeginSingleTimeCommands()
+			{
+				VkDevice device = Settings::GetInstance()->GetPointer<VkDevice>("logicalDevice");
+				VkCommandPool commandPool = Settings::GetInstance()->GetPointer<VkCommandPool>("commandPool");
+
+				VkCommandBufferAllocateInfo allocationInformation{};
+
+				allocationInformation.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+				allocationInformation.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+				allocationInformation.commandPool = commandPool;
+				allocationInformation.commandBufferCount = 1;
+
+				VkCommandBuffer commandBuffer;
+
+				vkAllocateCommandBuffers(device, &allocationInformation, &commandBuffer);
+
+				VkCommandBufferBeginInfo beginInfo{};
+				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+				beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+				vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+				return commandBuffer;
+			}
+
+			void EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+			{
+				VkDevice device = Settings::GetInstance()->GetPointer<VkDevice>("logicalDevice");
+				VkQueue graphicsQueue = Settings::GetInstance()->GetPointer<VkQueue>("graphicsQueue");
+				VkCommandPool commandPool = Settings::GetInstance()->GetPointer<VkCommandPool>("commandPool");
+
+				vkEndCommandBuffer(commandBuffer);
+
+				VkSubmitInfo submitInfo{};
+				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers = &commandBuffer;
+
+				vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+				vkQueueWaitIdle(graphicsQueue);
+
+				vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+			}
+
 			String name;
 
 			Shared<Shader> shader;
-
+			
 			Vector<Vertex> vertices;
 			Vector<uint> indices;
 

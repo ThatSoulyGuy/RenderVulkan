@@ -51,8 +51,9 @@ namespace RenderVulkan
 				Settings::GetInstance()->SetPointer<VkQueue>("graphicsQueue", graphicsQueue);
 				Settings::GetInstance()->SetPointer<VkQueue>("presentQueue", presentQueue);
 				Settings::GetInstance()->SetPointer<VkSurfaceKHR>("surface", surface);
+				Settings::GetInstance()->SetPointer<VkCommandPool>("commandPool", commandPool);
 				Settings::GetInstance()->Set<VkExtent2D>("swapChainExtent", swapChainExtent);
-
+				
 				isInitalized = true;
 			}
 

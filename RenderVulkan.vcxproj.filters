@@ -71,6 +71,12 @@
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\Mesh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\DescriptorManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\Math\Transform.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\RenderVulkan\Shader\DefaultVertex.hlsl" />
