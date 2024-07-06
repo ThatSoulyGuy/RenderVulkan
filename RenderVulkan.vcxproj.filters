@@ -67,7 +67,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\RenderVulkan\Shader\DefaultVertex.glsl" />
-    <None Include="Assets\RenderVulkan\Shader\DefaultFragment.glsl" />
+    <None Include="Assets\RenderVulkan\Shader\DefaultVertex.hlsl" />
+    <None Include="Assets\RenderVulkan\Shader\DefaultFragment.hlsl" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-glslc -fshader-stage=vertex ./DefaultVertex.glsl -o ./DefaultVertex.spv
-glslc -fshader-stage=fragment ./DefaultFragment.glsl -o ./DefaultFragment.spv
+dxc -T vs_6_0 -E main -spirv -Fo DefaultVertex.spv DefaultVertex.hlsl
+dxc -T ps_6_0 -E main -spirv -Fo DefaultFragment.spv DefaultFragment.hlsl
 
 pause
