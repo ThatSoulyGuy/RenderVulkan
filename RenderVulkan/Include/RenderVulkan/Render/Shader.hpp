@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include "RenderVulkan/Core/Settings.hpp"
+#include "RenderVulkan/ECS/GameObject.hpp"
 #include "RenderVulkan/Render/DescriptorManager.hpp"
 #include "RenderVulkan/Render/Vertex.hpp"
 #include "RenderVulkan/Util/FileHelper.hpp"
@@ -11,13 +12,14 @@
 #include "RenderVulkan/Util/VulkanHelper.hpp"
 
 using namespace RenderVulkan::Core;
+using namespace RenderVulkan::ECS;
 using namespace RenderVulkan::Util;
 
 namespace RenderVulkan
 {
 	namespace Render
 	{
-		class Shader
+		class Shader : public Component
 		{
 
 		public:

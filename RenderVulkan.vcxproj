@@ -165,6 +165,9 @@
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Core\Logger.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Core\Settings.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Core\Window.hpp" />
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\ECS\Component.hpp" />
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\ECS\GameObject.hpp" />
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\ECS\GameObjectManager.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Engine.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\DescriptorManager.hpp" />
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Render\Mesh.hpp" />

@@ -2,6 +2,7 @@
 
 #include "RenderVulkan/Core/Logger.hpp"
 #include "RenderVulkan/Core/Settings.hpp"
+#include "RenderVulkan/ECS/GameObjectManager.hpp"
 #include "RenderVulkan/Render/Renderer.hpp"
 #include "RenderVulkan/Render/Mesh.hpp"
 #include "RenderVulkan/Render/ShaderManager.hpp"
@@ -63,7 +64,12 @@ namespace RenderVulkan
 			ShaderManager::GetInstance()->Register(Shader::Create("Shader/Default", "default", std::move(descriptorManager)));
 			ShaderManager::GetInstance()->CreateShaderGraphicsPipelines(Renderer::GetInstance()->GetRenderPass());
 			
-			mesh = Mesh::Create("mesh", ShaderManager::GetInstance()->Get("default"), 
+			gameObject = GameObject::Create("gameObject");
+			GameObjectManager::GetInstance()->Register(gameObject);
+
+			gameObject->AddComponent<Shader>(ShaderManager::GetInstance()->Get("default"));
+
+			gameObject->AddComponent<Mesh>(Mesh::Create("mesh", 
 			{
 				{{ -0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }},
 				{{  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f }},
@@ -73,19 +79,21 @@ namespace RenderVulkan
 			{
 				0, 1, 2, 
 				2, 3, 0
-			});
+			}));
 
-			mesh->Generate();
+			gameObject->GetComponent<Mesh>()->Generate();
 
 			Renderer::GetInstance()->SetRenderCallback([this](VkCommandBuffer commandBuffer, int index)
 			{ 
-				mesh->Render(commandBuffer);
+				GameObjectManager::GetInstance()->Render(commandBuffer);
 			});
 		}
 
 		void Update()
 		{
-			mesh->transform->Rotate({ 0.0f, 0.0f, -0.01f });
+			gameObject->GetTransform()->Rotate({0.0f, 0.0f, -0.01f});
+
+			GameObjectManager::GetInstance()->Update();
 		}
 
 		void Render()
@@ -97,7 +105,7 @@ namespace RenderVulkan
 		{
 			Logger_WriteConsole("Cleaning up engine...", LogLevel::INFORMATION);
 
-			mesh->CleanUp();
+			GameObjectManager::GetInstance()->CleanUp();
 			ShaderManager::GetInstance()->CleanUp();
 			Renderer::GetInstance()->CleanUp();
 		}
@@ -111,7 +119,7 @@ namespace RenderVulkan
 
 	private:
 
-		Shared<Mesh> mesh;
+		Shared<GameObject> gameObject;
 
 	};
 }

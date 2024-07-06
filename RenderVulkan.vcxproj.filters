@@ -77,6 +77,15 @@
     <ClInclude Include="RenderVulkan\Include\RenderVulkan\Math\Transform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\ECS\Component.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\ECS\GameObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderVulkan\Include\RenderVulkan\ECS\GameObjectManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\RenderVulkan\Shader\DefaultVertex.hlsl" />

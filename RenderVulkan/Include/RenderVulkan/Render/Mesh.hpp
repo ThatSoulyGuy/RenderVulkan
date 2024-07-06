@@ -2,6 +2,7 @@
 
 #include "RenderVulkan/Core/Logger.hpp"
 #include "RenderVulkan/Core/Settings.hpp"
+#include "RenderVulkan/ECS/GameObject.hpp"
 #include "RenderVulkan/Math/Transform.hpp"
 #include "RenderVulkan/Render/Shader.hpp"
 #include "RenderVulkan/Render/Vertex.hpp"
@@ -9,6 +10,7 @@
 #include "RenderVulkan/Util/VulkanHelper.hpp"
 
 using namespace RenderVulkan::Core;
+using namespace RenderVulkan::ECS;
 using namespace RenderVulkan::Math;
 using namespace RenderVulkan::Util;
 
@@ -21,7 +23,7 @@ namespace RenderVulkan
 			Matrix4x4f worldMatrix;
 		};
 
-		class Mesh
+		class Mesh : public Component
 		{
 
 		public:
@@ -59,7 +61,7 @@ namespace RenderVulkan
 				vkDestroyBuffer(device, stagingBuffer, nullptr);
 				vkFreeMemory(device, stagingBufferMemory, nullptr);
 
-				shader->CreateConstantBuffer<DefaultMatrixBuffer>();
+				gameObject->GetComponent<Shader>()->CreateConstantBuffer<DefaultMatrixBuffer>();
 			}
 
 			String GetName() const
@@ -72,8 +74,10 @@ namespace RenderVulkan
 				return { vertices, indices };
 			}
 
-			void Render(VkCommandBuffer commandBuffer)
+			void Render(VkCommandBuffer commandBuffer) override
 			{
+				Shared<Shader> shader = gameObject->GetComponent<Shader>();
+
 				shader->Bind(commandBuffer);
 
 				VkExtent2D swapChainExtent = Settings::GetInstance()->Get<VkExtent2D>("swapChainExtent");
@@ -114,7 +118,7 @@ namespace RenderVulkan
 				vkCmdDrawIndexed(commandBuffer, static_cast<uint>(indices.size()), 1, 0, 0, 0);
 			}
 
-			void CleanUp()
+			void CleanUp() override
 			{
 				VkDevice device = Settings::GetInstance()->GetPointer<VkDevice>("logicalDevice");
 
@@ -145,7 +149,7 @@ namespace RenderVulkan
 				}
 			}
 
-			static Shared<Mesh> Create(String name, Shared<Shader> shader, Vector<Vertex> vertices, Vector<uint> indices)
+			static Shared<Mesh> Create(String name, Vector<Vertex> vertices, Vector<uint> indices)
 			{
 				class EnabledMesh : public Mesh { };
 				

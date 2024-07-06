@@ -1,14 +1,16 @@
 #pragma once
 
+#include "RenderVulkan/ECS/Component.hpp"
 #include "RenderVulkan/Util/Typedefs.hpp"
 
+using namespace RenderVulkan::ECS;
 using namespace RenderVulkan::Util;
 
 namespace RenderVulkan
 {
 	namespace Math
 	{
-        class Transform
+        class Transform : public Component
         {
         public:
 
