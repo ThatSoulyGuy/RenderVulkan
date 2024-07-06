@@ -45,12 +45,13 @@ namespace RenderVulkan
 				CreateCommandBuffers();
 				CreateSyncObjects();
 
-				Settings::GetInstance()->Set<VkInstance>("vulkanInstance", instance);
-				Settings::GetInstance()->Set<VkDevice>("logicalDevice", device);
-				Settings::GetInstance()->Set<VkPhysicalDevice>("physicalDevice", physicalDevice);
-				Settings::GetInstance()->Set<VkQueue>("graphicsQueue", graphicsQueue);
-				Settings::GetInstance()->Set<VkQueue>("presentQueue", presentQueue);
-				Settings::GetInstance()->Set<VkSurfaceKHR>("surface", surface);
+				Settings::GetInstance()->SetPointer<VkInstance>("vulkanInstance", instance);
+				Settings::GetInstance()->SetPointer<VkDevice>("logicalDevice", device);
+				Settings::GetInstance()->SetPointer<VkPhysicalDevice>("physicalDevice", physicalDevice);
+				Settings::GetInstance()->SetPointer<VkQueue>("graphicsQueue", graphicsQueue);
+				Settings::GetInstance()->SetPointer<VkQueue>("presentQueue", presentQueue);
+				Settings::GetInstance()->SetPointer<VkSurfaceKHR>("surface", surface);
+				Settings::GetInstance()->Set<VkExtent2D>("swapChainExtent", swapChainExtent);
 
 				isInitalized = true;
 			}
@@ -136,7 +137,7 @@ namespace RenderVulkan
 				deviceExtensions.push_back(extension.c_str());
 			}
 
-			void SetRenderCallback(const Function<void()>& callback)
+			void SetRenderCallback(const Function<void(VkCommandBuffer, int)>& callback)
 			{
 				renderCallback = callback;
 			}
@@ -181,6 +182,21 @@ namespace RenderVulkan
 				return commandBuffers[index];
 			}
 
+			VkCommandBuffer GetCommandBuffer() const
+			{
+				return commandBuffers[GetCurrentFrame()];
+			}
+
+			VkRenderPass GetRenderPass() const
+			{
+				return renderPass;
+			}
+
+			VkExtent2D GetSwapChainExtent() const
+			{
+				return swapChainExtent;
+			}
+
 			VkSemaphore GetImageAvailableSemaphore(Size index) const
 			{
 				return imageAvailableSemaphores[index];
@@ -199,6 +215,11 @@ namespace RenderVulkan
 			void SetCurrentFrame(Size index)
 			{
 				currentFrame = index;
+			}
+
+			Size GetCurrentFrame() const
+			{
+				return currentFrame;
 			}
 
 			void CleanUp()
@@ -370,6 +391,8 @@ namespace RenderVulkan
 				}
 
 				VkPhysicalDeviceFeatures deviceFeatures{};
+				deviceFeatures.samplerAnisotropy = VK_TRUE;
+				deviceFeatures.sampleRateShading = VK_TRUE;
 
 				VkDeviceCreateInfo creationInformation{};
 
@@ -637,7 +660,7 @@ namespace RenderVulkan
 
 				vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-				renderCallback();
+				renderCallback(commandBuffer, imageIndex);
 
 				vkCmdEndRenderPass(commandBuffer);
 
@@ -728,7 +751,7 @@ namespace RenderVulkan
 			
 			VkSurfaceKHR surface = VK_NULL_HANDLE;
 
-			Function<void()> renderCallback;
+			Function<void(VkCommandBuffer, int)> renderCallback;
 
 			Vector<const char*> validationLayers = 
 			{

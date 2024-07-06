@@ -27,6 +27,12 @@ namespace RenderVulkan
 				registeredShaders.erase(name);
 			}
 
+			void CreateShaderGraphicsPipelines(VkRenderPass renderPass)
+			{
+				for (auto& [name, shader] : registeredShaders)
+					shader->CreatePipeline(renderPass);
+			}
+
 			Shared<Shader> Get(const String& name)
 			{
 				return registeredShaders[name];

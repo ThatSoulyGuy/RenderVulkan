@@ -26,7 +26,7 @@ int main()
 	}
 	catch (const std::exception& exception)
 	{
-		std::cerr << "\n====================================\n                  Exception Occured! " << exception.what() << "\n===================================\n" << std::endl;
+		std::cerr << "\n============================================================================\n                  Exception Occured! " << exception.what() << "\n============================================================================\n" << std::endl;
 	}
 
 	return 0;

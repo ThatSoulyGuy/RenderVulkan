@@ -19,7 +19,7 @@ namespace RenderVulkan
 				if (registeredSettings.contains(key))
 					return;
 
-				registeredSettings[key] = value;
+				registeredSettings[key] = std::make_any<T>(value);
 			}
 
 			template<typename T>
@@ -29,6 +29,21 @@ namespace RenderVulkan
 					return T();
 
 				return std::any_cast<T>(registeredSettings[key]);
+			}
+
+			template<typename T>
+			void SetPointer(const String& key, T handle)
+			{
+				registeredSettings[key] = std::make_any<uint64_t>(reinterpret_cast<uint64_t>(handle));
+			}
+
+			template<typename T>
+			T GetPointer(const std::string& key)
+			{
+				if (!registeredSettings.contains(key))
+					return nullptr;
+
+				return reinterpret_cast<T>(std::any_cast<uint64_t>(registeredSettings[key]));
 			}
 
 			static Shared<Settings> GetInstance()
