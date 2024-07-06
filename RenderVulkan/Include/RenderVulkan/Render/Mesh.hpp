@@ -152,8 +152,6 @@ namespace RenderVulkan
 				Shared<Mesh> mesh = std::make_shared<EnabledMesh>();
 
 				mesh->name = name;
-				mesh->shader = shader;
-				mesh->transform = Transform::Create();
 				mesh->vertices = vertices;
 				mesh->indices = indices;
 
@@ -257,8 +255,6 @@ namespace RenderVulkan
 
 			String name;
 
-			Shared<Shader> shader;
-			
 			Vector<Vertex> vertices;
 			Vector<uint> indices;
 
