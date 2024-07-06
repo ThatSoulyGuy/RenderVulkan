@@ -58,6 +58,9 @@ namespace RenderVulkan
 
 			void Render()
 			{
+				if (swapChainExtent.width <= 0 || swapChainExtent.height <= 0)
+					return;
+
 				vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 				vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
@@ -642,12 +645,14 @@ namespace RenderVulkan
 			void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint imageIndex) 
 			{
 				VkCommandBufferBeginInfo beginInfo = {};
+
 				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
 				VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
 				Logger_ThrowIfFailed(result, "Failed to begin recording command buffer", true);
 
 				VkRenderPassBeginInfo renderPassInfo = {};
+
 				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 				renderPassInfo.renderPass = renderPass;
 				renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
@@ -655,6 +660,7 @@ namespace RenderVulkan
 				renderPassInfo.renderArea.extent = swapChainExtent;
 
 				VkClearValue clearColor = { 0.0f, 0.45f, 0.75f, 1.0f };
+
 				renderPassInfo.clearValueCount = 1;
 				renderPassInfo.pClearValues = &clearColor;
 
