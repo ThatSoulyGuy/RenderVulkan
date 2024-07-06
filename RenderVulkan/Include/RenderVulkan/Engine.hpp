@@ -3,6 +3,7 @@
 #include "RenderVulkan/Core/Logger.hpp"
 #include "RenderVulkan/Core/Settings.hpp"
 #include "RenderVulkan/Render/Renderer.hpp"
+#include "RenderVulkan/Render/Mesh.hpp"
 #include "RenderVulkan/Render/ShaderManager.hpp"
 #include "RenderVulkan/Util/Typedefs.hpp"
 
@@ -41,31 +42,23 @@ namespace RenderVulkan
 			ShaderManager::GetInstance()->Register(Shader::Create("Shader/Default", "default"));
 			ShaderManager::GetInstance()->CreateShaderGraphicsPipelines(Renderer::GetInstance()->GetRenderPass());
 			
-			Renderer::GetInstance()->SetRenderCallback([this](VkCommandBuffer commandBuffer, int index)
+			mesh = Mesh::Create("mesh", ShaderManager::GetInstance()->Get("default"), 
 			{
-				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ShaderManager::GetInstance()->Get("default")->GetPipeline());
+				{{ -0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }},
+				{{  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f }},
+				{{  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }},
+				{{ -0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }}
+			}, 
+			{
+				0, 1, 2, 
+				2, 3, 0
+			});
 
-				VkExtent2D swapChainExtent = Renderer::GetInstance()->GetSwapChainExtent();
+			mesh->Generate();
 
-				VkViewport viewport{};
-
-				viewport.x = 0.0f;
-				viewport.y = 0.0f;
-				viewport.width = static_cast<float>(swapChainExtent.width);
-				viewport.height = static_cast<float>(swapChainExtent.height);
-				viewport.minDepth = 0.0f;
-				viewport.maxDepth = 1.0f;
-
-				vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-				VkRect2D scissor{};
-
-				scissor.offset = { 0, 0 };
-				scissor.extent = swapChainExtent;
-
-				vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-				vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+			Renderer::GetInstance()->SetRenderCallback([this](VkCommandBuffer commandBuffer, int index)
+			{ 
+				mesh->Render(commandBuffer);
 			});
 		}
 
@@ -83,6 +76,7 @@ namespace RenderVulkan
 		{
 			Logger_WriteConsole("Cleaning up engine...", LogLevel::INFORMATION);
 
+			mesh->CleanUp();
 			ShaderManager::GetInstance()->CleanUp();
 			Renderer::GetInstance()->CleanUp();
 		}
@@ -93,5 +87,10 @@ namespace RenderVulkan
 
 			return instance;
 		}
+
+	private:
+
+		Shared<Mesh> mesh;
+
 	};
 }

@@ -16,9 +16,6 @@ namespace RenderVulkan
 			template<typename T>
 			void Set(const String& key, const T& value)
 			{
-				if (registeredSettings.contains(key))
-					return;
-
 				registeredSettings[key] = std::make_any<T>(value);
 			}
 

@@ -515,6 +515,8 @@ namespace RenderVulkan
 
 				swapChainExtent = extent;
 
+				Settings::GetInstance()->Set<VkExtent2D>("swapChainExtent", swapChainExtent);
+
 				Logger_WriteConsole("Swap chain created", LogLevel::INFORMATION);
 			}
 

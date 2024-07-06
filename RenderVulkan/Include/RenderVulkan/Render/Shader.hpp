@@ -3,9 +3,11 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include "RenderVulkan/Core/Settings.hpp"
+#include "RenderVulkan/Render/Vertex.hpp"
 #include "RenderVulkan/Util/FileHelper.hpp"
 #include "RenderVulkan/Util/Formatter.hpp"
 #include "RenderVulkan/Util/Typedefs.hpp"
+#include "RenderVulkan/Util/VulkanHelper.hpp"
 
 using namespace RenderVulkan::Core;
 using namespace RenderVulkan::Util;
@@ -31,14 +33,14 @@ namespace RenderVulkan
                 vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
                 vertexShaderStageInfo.module = vertexShaderModule;
-                vertexShaderStageInfo.pName = "main";
+                vertexShaderStageInfo.pName = "Main";
 
                 VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
 
                 fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
                 fragmentShaderStageInfo.module = fragmentShaderModule;
-                fragmentShaderStageInfo.pName = "main";
+                fragmentShaderStageInfo.pName = "Main";
 
                 VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
 
@@ -54,13 +56,16 @@ namespace RenderVulkan
 				dynamicState.dynamicStateCount = static_cast<uint>(dynamicStates.size());
 				dynamicState.pDynamicStates = dynamicStates.data();
 
+				VkVertexInputBindingDescription bindingDescription = Vertex::GetBindingDescription();
+				Array<VkVertexInputAttributeDescription, 4> attributeDescriptions = Vertex::GetAttributeDescriptions();
+
 				VkPipelineVertexInputStateCreateInfo vertexInputInformation{};
 
 				vertexInputInformation.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-				vertexInputInformation.vertexBindingDescriptionCount = 0;
-				vertexInputInformation.pVertexBindingDescriptions = nullptr;
-				vertexInputInformation.vertexAttributeDescriptionCount = 0;
-				vertexInputInformation.pVertexAttributeDescriptions = nullptr;
+				vertexInputInformation.vertexBindingDescriptionCount = 1;
+				vertexInputInformation.pVertexBindingDescriptions = &bindingDescription;
+				vertexInputInformation.vertexAttributeDescriptionCount = static_cast<uint>(attributeDescriptions.size());;
+				vertexInputInformation.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 
@@ -113,7 +118,7 @@ namespace RenderVulkan
 				multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 				multisampling.minSampleShading = 1.0f;
 				multisampling.pSampleMask = nullptr;
-				multisampling.alphaToCoverageEnable = VK_FALSE; 
+				multisampling.alphaToCoverageEnable = VK_FALSE;
 				multisampling.alphaToOneEnable = VK_FALSE;
 
 				VkPipelineColorBlendAttachmentState colorBlendAttachment{};

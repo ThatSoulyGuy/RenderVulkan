@@ -222,7 +222,7 @@ namespace RenderVulkan
 				}
 			}
 
-			VkSampleCountFlagBits GetMaxUsableSampleCount(VkPhysicalDevice physicalDevice) 
+			static VkSampleCountFlagBits GetMaxUsableSampleCount(VkPhysicalDevice physicalDevice) 
 			{
 				VkPhysicalDeviceProperties physicalDeviceProperties;
 				vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
@@ -248,6 +248,22 @@ namespace RenderVulkan
 					return VK_SAMPLE_COUNT_2_BIT; 
 
 				return VK_SAMPLE_COUNT_1_BIT;
+			}
+
+			static uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
+			{
+				VkPhysicalDevice physicalDevice = Settings::GetInstance()->GetPointer<VkPhysicalDevice>("physicalDevice");
+				VkPhysicalDeviceMemoryProperties memoryProperties;
+
+				vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+
+				for (uint i = 0; i < memoryProperties.memoryTypeCount; i++)
+				{
+					if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+						return i;
+				}
+
+				Logger_ThrowException("Failed to find suitable memory type!", false);
 			}
 
 		private:
